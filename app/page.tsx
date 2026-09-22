@@ -29,11 +29,6 @@ export default function Home() {
           </div>
           <Link href="/compare" className="button primary"><GitCompareArrows size={17} /> Compare models</Link>
         </section>
-        <div className="data-status">
-          <span className="status-indicator" aria-hidden="true" />
-          <span>Official model specs <span className="status-divider">/</span> Calculated memory estimates</span>
-          <Link href="/methodology">How we get the data <ArrowRight size={14} /></Link>
-        </div>
         <ModelDirectory variant="trending" />
         <section className="home-rankings" aria-labelledby="home-rankings-title">
           <div className="section-heading"><div><h2 id="home-rankings-title">Find your shortlist</h2><p className="trending-caption">Start with a deployment question.</p></div><Link className="browse-models-link" href="/rankings">Explore all rankings <ArrowRight size={16} /></Link></div>

@@ -1,0 +1,166 @@
+import type { Model } from "./models";
+
+// Official model-card research: research/open-model-shortlist-2026-09-22.md.
+// New profiles keep memory estimates pending until the complete checkpoint
+// parameter scope (embeddings, encoders and draft heads) has been reconciled.
+const families: Record<string, Pick<Model, "maker" | "color" | "glyph">> = {
+  Qwen: { maker: "Alibaba", color: "violet", glyph: "Q" },
+  MiMo: { maker: "Xiaomi", color: "orange", glyph: "m" },
+  Gemma: { maker: "Google", color: "teal", glyph: "✦" },
+  GLM: { maker: "Z.ai", color: "blue", glyph: "Z" },
+  DeepSeek: { maker: "DeepSeek", color: "blue", glyph: "D" },
+  Nemotron: { maker: "NVIDIA", color: "teal", glyph: "N" },
+  Mistral: { maker: "Mistral AI", color: "orange", glyph: "M" },
+  MiniMax: { maker: "MiniMax", color: "violet", glyph: "M" },
+  Kimi: { maker: "Moonshot AI", color: "blue", glyph: "K" },
+};
+type Profile = Pick<Model, "slug" | "name" | "family" | "size" | "active" | "context" | "architecture" | "license" | "tag" | "description" | "takeaway"> & { repo: string; parameterNote: string };
+const profiles: Profile[] = [
+  {
+    slug: "qwen3-8-27b", name: "Qwen3.8 27B", family: "Qwen", size: "27B", context: "256K native", architecture: "Dense · vision", license: "Apache 2.0", tag: "Multimodal",
+    repo: "Qwen/Qwen3.8-27B",
+    description: "A mid-sized vision-language model for reasoning, coding, and agent workloads.",
+    takeaway: "Compare precision and context length separately. A smaller checkpoint does not establish a safe serving memory budget.",
+    parameterNote: "The model card lists 27B language-model parameters plus a vision encoder. Native context is 262,144 tokens, with a separately configured extension up to 1M.",
+  },
+  {
+    slug: "mimo-v2-6-distill-qwen-9b", name: "MiMo V2.6 Distill 9B", family: "MiMo", size: "~9B", context: "Under review", architecture: "Dense · vision", license: "MIT", tag: "Distilled",
+    repo: "XiaomiMiMo/MiMo-V2.6-Distill-Qwen-9B",
+    description: "A compact Qwen-based MiMo distillation for a smaller deployment footprint.",
+    takeaway: "Use this smaller MiMo checkpoint as a separate deployment target from the much larger Flash and Pro models.",
+    parameterNote: "This profile covers MiMo-V2.6-Distill-Qwen-9B. The 9B name is nominal; full checkpoint memory and context settings are pending verification.",
+  },
+  {
+    slug: "gemma-4-12b", name: "Gemma 4 12B", family: "Gemma", size: "11.95B", context: "256K", architecture: "Dense · multimodal", license: "Apache 2.0", tag: "Multimodal",
+    repo: "google/gemma-4-12B-it",
+    description: "Unified text, image, and audio understanding in a compact Gemma 4 model.",
+    takeaway: "The unified architecture processes multiple modalities without separate encoders. Test text, image, and audio workloads individually.",
+    parameterNote: "The model card lists 11.95B parameters and a 256K context window for the instruction-tuned 12B Unified model.",
+  },
+  {
+    slug: "qwen3-8-flash-next", name: "Qwen3.8 Flash-Next", family: "Qwen", size: "125B+", active: "6B", context: "256K native", architecture: "MoE · vision", license: "Qwen Community 1.0", tag: "Agentic",
+    repo: "Qwen/Qwen3.8-Flash-Next",
+    description: "A sparse model with extra embedding memory for long-context agent workloads.",
+    takeaway: "Include the large n-gram embedding tables and MTP head when sizing memory. The 6B activated figure is not the total weight footprint.",
+    parameterNote: "Official scope: 125B backbone with 6B activated, plus 51B n-gram embeddings and 4B MTP. Native context is 262,144 tokens; extension to 1M is separately configured.",
+  },
+  {
+    slug: "mimo-v2-6-flash-rl", name: "MiMo V2.6 Flash", family: "MiMo", size: "309B+", active: "15B", context: "1M", architecture: "MoE · multimodal", license: "MIT", tag: "Agentic",
+    repo: "XiaomiMiMo/MiMo-V2.6-Flash-RL",
+    description: "MiMo's multimodal Flash model with sparse experts and a 1M context window.",
+    takeaway: "Plan for a large resident checkpoint despite sparse activation. Runtime support for multimodal encoders and speculative decoding matters.",
+    parameterNote: "The model summary reports a 309B backbone and 15B activated parameters, with additional vision, audio, and speculative-decoding modules.",
+  },
+  {
+    slug: "glm-5-3-flash", name: "GLM 5.3 Flash", family: "GLM", size: "320B", active: "18B", context: "Under review", architecture: "MoE · vision", license: "MIT", tag: "Multimodal",
+    repo: "zai-org/GLM-5.3-Flash",
+    description: "A multimodal GLM model combining sparse experts with hybrid attention.",
+    takeaway: "Record the reasoning-effort setting with every test. Different reasoning budgets change generated token counts and end-to-end latency.",
+    parameterNote: "The publisher reports 320B total and 18B active parameters. Context limits and full checkpoint memory remain pending verification here.",
+  },
+  {
+    slug: "qwen3-5-9b", name: "Qwen3.5 9B", family: "Qwen", size: "~9B", context: "Under review", architecture: "Dense · vision", license: "Apache 2.0", tag: "Multimodal",
+    repo: "Qwen/Qwen3.5-9B",
+    description: "A smaller Qwen vision-language model for comparing compact deployments.",
+    takeaway: "Use the official post-trained checkpoint as the baseline when comparing distilled models and quantization variants.",
+    parameterNote: "9B is the nominal model size. This is a compact Qwen3.5 release, not the newest generation of the entire Qwen family.",
+  },
+  {
+    slug: "qwen3-6-35b-a3b", name: "Qwen3.6 35B-A3B", family: "Qwen", size: "35B+", active: "3B", context: "256K native", architecture: "MoE · vision", license: "Review model card", tag: "Agentic",
+    repo: "Qwen/Qwen3.6-35B-A3B",
+    description: "A smaller sparse Qwen model for coding agents and vision-language tasks.",
+    takeaway: "Compare its full checkpoint memory with dense models, rather than treating the 3B activated count as the deployment size.",
+    parameterNote: "The language model has 35B total and 3B active parameters, plus a vision encoder. Native context is 262,144 tokens; extended contexts require separate configuration.",
+  },
+  {
+    slug: "gemma-4-26b-a4b", name: "Gemma 4 26B-A4B", family: "Gemma", size: "~26B", active: "3.8B", context: "256K", architecture: "MoE · vision", license: "Apache 2.0", tag: "Multimodal",
+    repo: "google/gemma-4-26B-A4B-it",
+    description: "Gemma's sparse vision-language model, a useful counterpart to the dense 31B.",
+    takeaway: "Compare this MoE with Gemma 4 31B at the same precision and workload to separate weight memory from active compute.",
+    parameterNote: "The card lists 25.2B backbone parameters, 3.8B active parameters, and an approximately 550M-parameter vision encoder.",
+  },
+  {
+    slug: "gemma-4-31b", name: "Gemma 4 31B", family: "Gemma", size: "~31B", context: "256K", architecture: "Dense · vision", license: "Apache 2.0", tag: "Multimodal",
+    repo: "google/gemma-4-31B-it",
+    description: "A dense Gemma 4 model for text and image understanding at a larger scale.",
+    takeaway: "Use it as a dense counterpart to Gemma 4 26B-A4B. Quantization, context length, and image inputs each affect the memory budget.",
+    parameterNote: "The card lists 30.7B language-model parameters with an approximately 550M-parameter vision encoder; 31B is the rounded model name.",
+  },
+  {
+    slug: "gemma-4-e4b", name: "Gemma 4 E4B", family: "Gemma", size: "8B+", context: "128K", architecture: "Dense · multimodal", license: "Apache 2.0", tag: "On-device",
+    repo: "google/gemma-4-E4B-it",
+    description: "An edge-focused Gemma model with text, image, and audio inputs.",
+    takeaway: "Effective parameters are not the full checkpoint size. Account for per-layer embeddings and modality encoders before estimating memory.",
+    parameterNote: "The card gives 4.5B effective parameters, about 8B including embeddings, plus vision and audio encoders. Effective is not a MoE active-parameter count.",
+  },
+  {
+    slug: "nemotron-3-5-lightning", name: "Nemotron 3.5 Lightning", family: "Nemotron", size: "30B", active: "3B", context: "1M", architecture: "Hybrid MoE", license: "OpenMDW 1.1", tag: "Agentic",
+    repo: "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4",
+    description: "A hybrid NVIDIA model with an official NVFP4 checkpoint for agent inference.",
+    takeaway: "Stored precision and compute precision can differ. Check the official recipe for the exact GPU architecture and inference backend.",
+    parameterNote: "NVIDIA lists 30B total and 3B active parameters. This profile covers the official NVFP4 checkpoint released on August 11, 2026.",
+  },
+  {
+    slug: "qwen3-coder-next", name: "Qwen3-Coder-Next", family: "Qwen", size: "80B", active: "3B", context: "256K", architecture: "Hybrid MoE", license: "Apache 2.0", tag: "Coding",
+    repo: "Qwen/Qwen3-Coder-Next",
+    description: "A coding-focused sparse model for long-running agents and local development.",
+    takeaway: "The checkpoint contains 80B parameters despite 3B activation. Test with the actual coding scaffold and tool-call parser you will deploy.",
+    parameterNote: "The official card lists 80B total, 3B active parameters and a native context of 262,144 tokens. It supports non-thinking mode only.",
+  },
+  {
+    slug: "mistral-small-4", name: "Mistral Small 4", family: "Mistral", size: "119B", active: "6.5B", context: "256K", architecture: "MoE · vision", license: "Apache 2.0", tag: "Reasoning",
+    repo: "mistralai/Mistral-Small-4-119B-2603",
+    description: "A multimodal MoE unifying instruction following, reasoning, and coding.",
+    takeaway: "Small is the product name, not the weight footprint. Test reasoning modes and official quantized checkpoints separately.",
+    parameterNote: "The publisher lists 119B total parameters, 6.5B activated per token, and a 256K context window.",
+  },
+  {
+    slug: "deepseek-v4-1-flash", name: "DeepSeek V4.1 Flash", family: "DeepSeek", size: "552B+", context: "1M", architecture: "MoE · vision", license: "MIT", tag: "Reasoning",
+    repo: "deepseek-ai/DeepSeek-V4.1-Flash",
+    description: "A multimodal model using encoder-decoder attention and KV cache compression.",
+    takeaway: "Separate prefill and decode measurements. This architecture activates different parameter counts in each phase and includes a large conditional-memory module.",
+    parameterNote: "The card lists a 552B backbone plus 196B Engram conditional memory and other modules. Activation is 8B during prefill and 16B during decode, not one fixed number.",
+  },
+  {
+    slug: "mimo-v2-6-pro-rl", name: "MiMo V2.6 Pro", family: "MiMo", size: "1.02T+", active: "42B", context: "1M", architecture: "MoE · multimodal", license: "MIT", tag: "Agentic",
+    repo: "XiaomiMiMo/MiMo-V2.6-Pro-RL",
+    description: "MiMo's large multimodal model for long-context, tool-using agent workloads.",
+    takeaway: "Treat this as a large-scale deployment project. Validate parallelism, interconnect, encoder support, and memory before choosing instances.",
+    parameterNote: "The model summary lists a 1.02T backbone and 42B active parameters, with additional vision, audio, and speculative-decoding modules.",
+  },
+  {
+    slug: "minimax-m3", name: "MiniMax M3", family: "MiniMax", size: "~428B", active: "23B", context: "1M", architecture: "MoE · vision", license: "MiniMax Community", tag: "Multimodal",
+    repo: "MiniMaxAI/MiniMax-M3",
+    description: "A native multimodal model with sparse attention for million-token contexts.",
+    takeaway: "Measure long-context prefill and decode separately, and verify support for the model's sparse-attention implementation.",
+    parameterNote: "The publisher describes approximately 428B total and 23B activated parameters, with text, image, and video inputs.",
+  },
+  {
+    slug: "kimi-k3", name: "Kimi K3", family: "Kimi", size: "2.8T", active: "104B", context: "1M", architecture: "MoE · vision", license: "Kimi K3 License", tag: "Agentic",
+    repo: "moonshotai/Kimi-K3",
+    description: "A large-scale vision-language MoE for coding and long-horizon agent tasks.",
+    takeaway: "Official quantization and distributed serving requirements are central to deployment planning at this scale.",
+    parameterNote: "The model summary lists 2.8T total and 104B activated parameters, MXFP4 weights, MXFP8 activations, and a 1,048,576-token context.",
+  },
+  {
+    slug: "glm-5-3", name: "GLM 5.3", family: "GLM", size: "~753B*", context: "Under review", architecture: "MoE", license: "GLM-5.3 License", tag: "Coding",
+    repo: "zai-org/GLM-5.3",
+    description: "A large GLM checkpoint for coding, with a separate license from Flash.",
+    takeaway: "Check this release's license and deployment recipe directly. Do not inherit the license or memory requirements of GLM 5.3 Flash.",
+    parameterNote: "The approximately 753B figure is the repository's displayed tensor count, pending reconciliation with the architecture. Memory estimates remain unavailable.",
+  },
+  {
+    slug: "qwen3-8-2-4t-a95b", name: "Qwen3.8 2.4T-A95B", family: "Qwen", size: "~2.4T", active: "95B", context: "Under review", architecture: "MoE", license: "Qwen3.8-Max License", tag: "Reasoning",
+    repo: "Qwen/Qwen3.8-2.4T-A95B",
+    description: "A large-scale Qwen model for distributed text-generation deployments.",
+    takeaway: "Plan for distributed infrastructure, and check this checkpoint's own license rather than reusing the 27B model's terms.",
+    parameterNote: "The name specifies 2.4T total and 95B active parameters. Checkpoint size and serving context are pending verification here.",
+  },
+];
+export const latestModels: Model[] = profiles.map(({ repo, parameterNote, ...profile }) => ({
+  ...profile,
+  ...families[profile.family],
+  params: null,
+  source: `https://huggingface.co/${repo}`,
+  notes: [parameterNote, "GPU memory estimates and minimum / recommended configurations are pending. This profile does not contain measured deployment results."],
+}));

@@ -1,0 +1,82 @@
+import type { Guide } from "./guides";
+
+export const fieldNotes: Guide[] = [
+  {
+    slug: "4-bit-vs-8-bit-llm-inference", number: "04", category: "QUANTIZATION",
+    title: "4-bit vs. 8-bit LLM inference: what actually changes?",
+    description: "Compare 4-bit, 8-bit, and 16-bit model weights, quantization compatibility, and a practical quality test before choosing a GPU.",
+    readTime: "3 min read", published: "2026-09-22", updated: "2026-09-22",
+    intro: "Fewer bits can reduce weight storage. They do not promise a faster endpoint or identical answers. Treat a quantized checkpoint as a candidate configuration that needs its own compatibility, quality, and load checks.",
+    sections: [
+      { title: "Use the arithmetic as a lower bound.", body: "For an illustrative 12-billion-parameter model, raw weight storage is 24 GB at 16 bits, 12 GB at 8 bits, and 6 GB at 4 bits. Divide parameters × bits by eight to obtain bytes. This example uses decimal GB and assumes every parameter uses the same precision. Actual files can include scales, unquantized layers, and additional modules; serving also needs working memory and attention state. A 6 GB arithmetic result is not a recommendation to buy a 6 GB GPU." },
+      { title: "Name the format, not just the bit width.", body: "INT8 and FP8 use the same number of bits but represent values differently. A checkpoint's quantization scheme and the inference engine's implementation determine which hardware can execute it. vLLM publishes a compatibility table by implementation and GPU architecture. Check the exact combination, including your installed version, before comparing prices. Record the checkpoint revision, format, GPU, runtime, and cache precision together so a later test refers to the same configuration." },
+      { title: "Set a quality gate before measuring speed.", body: "Create a small evaluation set from the job your application performs: valid structured responses, correct answers to document questions, or passing code tests. Run the same set on the reference and candidate checkpoints with the same generation budget. Review failures by category instead of accepting a single average score. Our suggested decision rule is to choose an acceptable error threshold before seeing the results, then reject configurations that fail it even if they use less memory." },
+      { title: "Measure the configuration you will serve.", body: "Keep prompt lengths, output limits, cache policy, and arrival rate consistent. Report latency and successful output throughput alongside memory. A format that makes a model fit may still miss your latency target. Conversely, extra memory headroom can be useful for more concurrent requests. BenchGrid's precision tabs show weight-storage arithmetic only; they do not assert that a compatible checkpoint exists or that we have tested its quality." },
+    ],
+    sources: [
+      { title: "Hugging Face: quantization overview", url: "https://huggingface.co/docs/transformers/quantization/overview" },
+      { title: "vLLM: quantization and hardware compatibility", url: "https://docs.vllm.ai/en/latest/features/quantization/" },
+    ],
+    related: ["how-much-vram-do-you-need", "kv-cache-context-length-vram"],
+  },
+  {
+    slug: "kv-cache-context-length-vram", number: "05", category: "MEMORY PLANNING",
+    title: "KV cache and context length: why a model runs out of VRAM",
+    description: "Understand how context length and concurrent requests affect KV cache memory, with a worked example and a practical out-of-memory diagnosis.",
+    readTime: "3 min read", published: "2026-09-22", updated: "2026-09-22",
+    intro: "Loading a checkpoint successfully answers one question: can the weights load? A deployment must also hold the state of requests in progress. That is why a short test can work while a longer conversation runs out of memory.",
+    sections: [
+      { title: "Budget for tokens that are still in flight.", body: "Autoregressive transformers can reuse cached attention keys and values instead of recomputing them for every generated token. For full-attention layers, cache storage grows as the sequence grows. Concurrent sequences add more state. Sliding-window layers and hybrid architectures behave differently, so a single context-length multiplier cannot describe every model. Hugging Face documents the distinctions between dynamic, static, offloaded, and quantized caches; the serving engine determines which are available for your checkpoint." },
+      { title: "A worked example, not a model recommendation.", body: "Consider a hypothetical full-attention model with 32 layers, 8 KV heads per layer, head dimension 128, and a 16-bit cache. One cached token needs 2 × 32 × 8 × 128 × 2 = 131,072 bytes for keys and values. At 8,192 tokens, that is 1 GiB for one sequence; eight independent sequences would need 8 GiB. This simplified calculation excludes allocator overhead and assumes identical layers, no shared prefix, no sliding window, and no cache compression. It is not a measurement of a model in our directory." },
+      { title: "Separate the advertised limit from your service limit.", body: "A model's supported context is a capability ceiling, not a claim that every GPU can serve that many tokens. Decide how much space your application needs for input and generated output together. For a document assistant, start with the actual distribution of retrieved text and conversation history. Our suggested experiment is to test short, typical, and long requests separately, then repeat at several concurrency levels while recording peak memory and failures." },
+      { title: "Diagnose the point of failure.", body: "Record whether the failure occurs during loading, prompt processing, or generation. Reduce one variable at a time: maximum sequence length, concurrent requests, or the size of image and audio inputs. Keep a successful configuration as a baseline. Cache offloading and cache quantization can change the trade-off, but require compatible implementations and fresh latency and quality checks. Do not convert one successful short request into a production capacity claim." },
+    ],
+    sources: [{ title: "Hugging Face: cache strategies", url: "https://huggingface.co/docs/transformers/kv_cache" }],
+    related: ["how-much-vram-do-you-need", "4-bit-vs-8-bit-llm-inference"],
+  },
+  {
+    slug: "moe-active-vs-total-parameters", number: "06", category: "MODEL ARCHITECTURE",
+    title: "MoE GPU requirements: active parameters vs. total weights",
+    description: "Why a mixture-of-experts model's active parameter count is not its GPU memory requirement, and how to compare sparse and dense deployments.",
+    readTime: "3 min read", published: "2026-09-22", updated: "2026-09-22",
+    intro: "A sparse model can use a small subset of its experts for one token while retaining a much larger collection of weights. The active parameter count describes part of the computation; it is not the amount of memory to reserve for the checkpoint.",
+    sections: [
+      { title: "Keep storage and computation in separate columns.", body: "A fully resident deployment must make the checkpoint's experts available even when a particular token does not use all of them. As a concrete publisher example, Gemma 4 26B-A4B lists approximately 25.2B backbone parameters and 3.8B active parameters, alongside a vision encoder. Those numbers answer different questions. When reading a model name, check whether embeddings, encoders, and auxiliary prediction heads are included in the stated total." },
+      { title: "Work an example before shopping for hardware.", body: "Imagine a simplified MoE with 100 billion total parameters and 10 billion active per token. At uniform 16-bit precision, the raw total weight storage is 200 GB. Multiplying only the active count would produce 20 GB and undercount storage by a factor of ten. Neither number includes serving allocations. This is an arithmetic teaching example, not an estimate for an actual checkpoint or evidence that any particular GPU arrangement works." },
+      { title: "Offloading changes the experiment.", body: "If weights are kept outside GPU memory and moved when needed, the deployment is no longer the same fully resident setup. Record where the weights live and the transfers involved. For our future tests, an offloaded configuration should have its own row, workload, and latency measurements. We would not combine its memory number with throughput obtained from an all-GPU run. That separation makes the result useful to someone trying to reproduce it." },
+      { title: "Compare sparse and dense models on the same task.", body: "Start with a quality target and a representative request set. Then compare successful throughput, tail latency, resident memory, and hardware cost under matching load. Do not assume that similar active counts make two architectures interchangeable. A useful shortlist can include both, but the ranking must come from measured behavior. Until those runs exist, BenchGrid keeps minimum and recommended GPU fields pending and links to the publisher's specifications." },
+    ],
+    sources: [{ title: "Google: Gemma 4 26B-A4B official model card", url: "https://huggingface.co/google/gemma-4-26B-A4B-it" }],
+    related: ["multi-gpu-inference-tensor-parallelism", "how-much-vram-do-you-need"],
+  },
+  {
+    slug: "multi-gpu-inference-tensor-parallelism", number: "07", category: "DEPLOYMENT DESIGN",
+    title: "Multi-GPU inference: tensor parallelism or more replicas?",
+    description: "Choose between splitting one model across GPUs and running independent replicas. Understand memory fit, interconnects, and what to benchmark.",
+    readTime: "3 min read", published: "2026-09-22", updated: "2026-09-22",
+    intro: "Two GPUs can help you fit one larger model or serve more independent work. Those are different deployment goals. Decide which problem you are solving before interpreting a multi-GPU benchmark.",
+    sections: [
+      { title: "First ask whether one complete replica fits.", body: "vLLM's deployment guidance starts with a single GPU when the model fits, then considers tensor parallelism within a node and combined strategies across nodes for larger models. Fit should cover the intended serving workload, not just the weight files. Our practical starting point is to establish one successful replica with a bounded context and request load, then use that measurement to decide what additional GPUs should accomplish." },
+      { title: "Splitting a model is different from duplicating it.", body: "Tensor parallelism distributes parts of model computation across devices that must cooperate on requests. Independent replicas each keep a complete model and handle different requests. The former can address per-replica memory constraints; the latter increases the number of available serving workers. Replicas do not combine their memory into one larger checkpoint budget. Record the GPUs per replica and the replica count separately in any report." },
+      { title: "Total VRAM is not a complete hardware description.", body: "Two deployments with the same aggregate memory can have different communication paths and runtime behavior. Record the GPU model, node count, interconnect, and parallelism settings with the result. A comparison that simply says four GPUs leaves too much unspecified. Our proposed test matrix changes one topology or parallelism setting at a time and includes the single-replica baseline whenever it is feasible." },
+      { title: "Test the reason you added the GPU.", body: "If the goal is fit, verify long requests and peak concurrency without allocation failures. If the goal is capacity, measure completed work within a latency target. If the goal is lower latency, compare the same request distribution at controlled load. For example, two replicas may be useful for independent batch jobs even when splitting each request brings little benefit. That is a hypothesis to measure, not a universal scaling claim. Publish failures and the workload alongside any speedup." },
+    ],
+    sources: [{ title: "vLLM: parallelism and scaling", url: "https://docs.vllm.ai/en/latest/serving/parallelism_scaling/" }],
+    related: ["moe-active-vs-total-parameters", "throughput-vs-latency"],
+  },
+  {
+    slug: "prefix-caching-llm-benchmarks", number: "08", category: "REPRODUCIBLE TESTS",
+    title: "Prefix caching: why the second LLM request can look faster",
+    description: "Separate cold and warm prefix-cache results, design a realistic cache test, and avoid misleading time-to-first-token comparisons.",
+    readTime: "3 min read", published: "2026-09-22", updated: "2026-09-22",
+    intro: "Repeating a prompt can change the work performed by the server. A faster second request may demonstrate useful prefix reuse, but it does not describe the cost of processing a new prompt from scratch.",
+    sections: [
+      { title: "Name the part of inference that benefits.", body: "vLLM's automatic prefix caching reuses cached attention state for shared prompt prefixes. It can reduce repeated prompt processing, such as multiple questions about the same long document. The documented benefit concerns prefill; it does not by itself accelerate the generation of new output tokens. Keep time to first token separate from output-generation speed when explaining a result." },
+      { title: "Design three workloads instead of one repeated prompt.", body: "Our suggested comparison includes unique prefixes, deliberately shared prefixes, and a replay of an application-like mix. Keep the lengths and generation settings comparable, and report the actual cache-hit behavior where the runtime exposes it. The shared-prefix case is useful evidence for a document workflow; the unique-prefix case answers a different question. Neither should stand in for the other without explanation." },
+      { title: "Make the cache state reproducible.", body: "Document whether a process was restarted or cache state was reset, how warmup was performed, and which requests populated the cache. Model warmup and prefix warmup are distinct: preparing kernels need not mean priming the exact evaluation prompts. In a proposed experiment, we would save the prompt ordering and run each scenario several times. Another operator should be able to reconstruct what state existed before measurement began." },
+      { title: "Interpret a speedup within its workload.", body: "Suppose a synthetic test repeatedly asks questions about one shared document. A warm run may be representative of that document being popular, but says little about a service receiving unrelated uploads. Report both cases and retain failed requests, timeouts, measurement duration, and latency percentiles. BenchGrid has not yet measured a cache speedup; this note describes how we plan to avoid confusing reuse with raw inference performance." },
+    ],
+    sources: [{ title: "vLLM: automatic prefix caching", url: "https://docs.vllm.ai/en/latest/features/automatic_prefix_caching/" }],
+    related: ["reading-a-benchmark", "throughput-vs-latency"],
+  },
+];

@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-09-22T19:03:01.476636+00:00",
+  "evidence_type": "publisher_metadata_not_benchmark",
+  "warning": "Checkpoint bytes are storage metadata, not measured VRAM. Packed tensor counts are not logical model parameter counts.",
+  "models": [
+    {
+      "repo": "XiaomiMiMo/MiMo-V2.6-Distill-Qwen-9B",
+      "revision": "2367e865d009c13ac81713a2878291d33ab28177",
+      "source": "https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Distill-Qwen-9B/tree/2367e865d009c13ac81713a2878291d33ab28177",
+      "gated": false,
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
+      "model_type": "qwen3_5",
+      "configured_dtype": "bfloat16",
+      "configured_context_tokens": 262144,
+      "quantization": {},
+      "tensor_metadata": {
+        "parameters": {
+          "BF16": 9409813744
+        },
+        "total": 9409813744
+      },
+      "checkpoint_index_total_bytes": 18819627488,
+      "root_safetensors_file_bytes": 18819720848,
+      "checkpoint_shards": 4,
+      "status": "not_run"
+    },
+    {
+      "repo": "google/gemma-4-12B-it",
+      "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+      "source": "https://huggingface.co/google/gemma-4-12B-it/tree/707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+      "gated": false,
+      "architectures": [
+        "Gemma4UnifiedForConditionalGeneration"
+      ],
+      "model_type": "gemma4_unified",
+      "configured_dtype": "bfloat16",
+      "configured_context_tokens": 262144,
+      "quantization": {},
+      "tensor_metadata": {
+        "parameters": {
+          "BF16": 11959730224
+        },
+        "total": 11959730224
+      },
+      "checkpoint_index_total_bytes": null,
+      "root_safetensors_file_bytes": 23919549408,
+      "checkpoint_shards": 1,
+      "status": "not_run"
+    },
+    {
+      "repo": "Qwen/Qwen3.8-27B",
+      "revision": "1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0",
+      "source": "https://huggingface.co/Qwen/Qwen3.8-27B/tree/1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0",
+      "gated": false,
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
+      "model_type": "qwen3_5",
+      "configured_dtype": "bfloat16",
+      "configured_context_tokens": 262144,
+      "quantization": {},
+      "tensor_metadata": {
+        "parameters": {
+          "BF16": 27781427952
+        },
+        "total": 27781427952
+      },
+      "checkpoint_index_total_bytes": 55562855904.0,
+      "root_safetensors_file_bytes": 55563006776,
+      "checkpoint_shards": 18,
+      "status": "not_run"
+    },
+    {
+      "repo": "Qwen/Qwen3.8-Flash-Next",
+      "revision": "de4b8e4d43b917e7706784d8bb445c9af86a3540",
+      "source": "https://huggingface.co/Qwen/Qwen3.8-Flash-Next/tree/de4b8e4d43b917e7706784d8bb445c9af86a3540",
+      "gated": false,
+      "architectures": [
+        "Qwen4ExpForConditionalGeneration"
+      ],
+      "model_type": "qwen4_exp",
+      "configured_dtype": "bfloat16",
+      "configured_context_tokens": 262144,
+      "quantization": {},
+      "tensor_metadata": {
+        "parameters": {
+          "BF16": 179999981424,
+          "I64": 35
+        },
+        "total": 179999981459
+      },
+      "checkpoint_index_total_bytes": 359999963128.0,
+      "root_safetensors_file_bytes": 360000192888,
+      "checkpoint_shards": 131,
+      "status": "not_run"
+    },
+    {
+      "repo": "XiaomiMiMo/MiMo-V2.6-Flash-RL",
+      "revision": "5711b268169967567844e1e560e8a3966da959b1",
+      "source": "https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Flash-RL/tree/5711b268169967567844e1e560e8a3966da959b1",
+      "gated": false,
+      "architectures": [
+        "MiMoV2ForCausalLM"
+      ],
+      "model_type": "mimo_v2",
+      "configured_dtype": "bfloat16",
+      "configured_context_tokens": 1048576,
+      "quantization": {
+        "quant_method": "fp8",
+        "store_dtype": "mxfp4",
+        "fmt": "e4m3",
+        "activation_scheme": "dynamic",
+        "weight_block_size": [
+          128,
+          128
+        ],
+        "mxfp4_block_size": 32
+      },
+      "tensor_metadata": {
+        "parameters": {
+          "F32": 12032,
+          "BF16": 4101308032,
+          "F8_E4M3": 3859808256,
+          "U8": 151397597184
+        },
+        "total": 159358725504
+      },
+      "checkpoint_index_total_bytes": 172923364096,
+      "root_safetensors_file_bytes": 172932505264,
+      "checkpoint_shards": 65,
+      "status": "not_run"
+    },
+    {
+      "repo": "zai-org/GLM-5.3-Flash",
+      "revision": "eb9eb208eb0d988989d07a6a12d0fdeb5f52574a",
+      "source": "https://huggingface.co/zai-org/GLM-5.3-Flash/tree/eb9eb208eb0d988989d07a6a12d0fdeb5f52574a",
+      "gated": false,
+      "architectures": [
+        "Glm5NextForConditionalGeneration"
+      ],
+      "model_type": "glm5_next",
+      "configured_dtype": "bfloat16",
+      "configured_context_tokens": 1048576,
+      "quantization": {
+        "quant_method": "fp8",
+        "fmt": "e4m3",
+        "activation_scheme": "dynamic",
+        "weight_block_size": [
+          128,
+          128
+        ]
+      },
+      "tensor_metadata": {
+        "parameters": {
+          "BF16": 6926096640,
+          "F8_E4M3": 314396639232,
+          "F32": 295518
+        },
+        "total": 321323031390
+      },
+      "checkpoint_index_total_bytes": 328326771576,
+      "root_safetensors_file_bytes": 328337455672,
+      "checkpoint_shards": 62,
+      "status": "not_run"
+    }
+  ]
+}

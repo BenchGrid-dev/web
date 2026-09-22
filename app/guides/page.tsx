@@ -19,7 +19,6 @@ export default function GuidesPage() {
       <div className="guide-list">
         {[...guides].reverse().map((g) => (
           <Link href={`/guides/${g.slug}`} key={g.slug}>
-            <span className="guide-number serif">{g.number}</span>
             <div>
               <span className="eyebrow">{g.category}</span>
               <h2>{g.title}</h2>

@@ -1874,15 +1874,10 @@ h2 {
 }
 .guide-list > a {
   display: grid;
-  grid-template-columns: 90px 1fr 40px;
+  grid-template-columns: minmax(0, 1fr) 40px;
   gap: 20px;
   padding: 37px 0;
   border-bottom: 1px solid var(--line);
-}
-.guide-number {
-  font-size: 60px;
-  color: #71717a;
-  line-height: 1;
 }
 .guide-list .eyebrow {
   color: #71717a;
@@ -2480,12 +2475,9 @@ h2 {
     font-size: 13px;
   }
   .guide-list > a {
-    grid-template-columns: 40px 1fr 20px;
+    grid-template-columns: minmax(0, 1fr) 28px;
     gap: 15px;
     padding: 27px 0;
-  }
-  .guide-number {
-    font-size: 37px;
   }
   .guide-list h2 {
     font-size: 26px;
@@ -2921,7 +2913,7 @@ h2 { letter-spacing: -0.6px; }
 .ranking-card-preview { display: flex; flex-direction: column; gap: 7px; margin-top: auto; font-size: 12px; color: #52525b; }
 .ranking-card-preview > span:first-child { font-size: 10px; letter-spacing: 1px; color: #a1a1aa; margin-bottom: 3px; }
 .ranking-card-bottom { display: flex; align-items: center; justify-content: space-between; padding-top: 18px; margin-top: 22px; border-top: 1px solid #f0f0f2; font-size: 12px; color: var(--muted); }
-.ranking-card-bottom svg { color: var(--accent); }
+.ranking-card-bottom svg { color: #a1a1aa; }
 .ranking-pending { padding: 28px; background: #f4f4f5; border-radius: 8px; margin-top: 40px; }
 .ranking-pending-heading { display: flex; gap: 12px; align-items: flex-start; }
 .ranking-pending-heading > svg { color: var(--accent); margin-top: 4px; flex-shrink: 0; }

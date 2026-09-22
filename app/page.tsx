@@ -4,6 +4,8 @@ import { MemorySnapshot } from "@/components/memory-snapshot";
 import { ModelDirectory } from "@/components/model-directory";
 import { pageMetadata, jsonLd, siteUrl } from "@/lib/seo";
 import { trendingModels } from "@/lib/models";
+import { rankings } from "@/lib/rankings";
+import { RankingCards } from "@/components/ranking-cards";
 
 export const metadata = pageMetadata(
   "Compare AI models: GPU memory & deployment specs",
@@ -33,6 +35,10 @@ export default function Home() {
           <Link href="/methodology">How we get the data <ArrowRight size={14} /></Link>
         </div>
         <ModelDirectory variant="trending" />
+        <section className="home-rankings" aria-labelledby="home-rankings-title">
+          <div className="section-heading"><div><h2 id="home-rankings-title">Find your shortlist</h2><p className="trending-caption">Start with a deployment question.</p></div><Link className="browse-models-link" href="/rankings">Explore all rankings <ArrowRight size={16} /></Link></div>
+          <RankingCards entries={rankings.slice(0, 3)} />
+        </section>
         <section className="deployment-resources" aria-label="Memory estimates and deployment guides">
           <MemorySnapshot />
           <div className="resource-guides">

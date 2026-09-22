@@ -37,6 +37,7 @@ try {
   assert.equal(paths.filter((path) => path.startsWith('/guides/')).length, 8);
   assert.equal(paths.filter((path) => path.startsWith('/compare/')).length, 4);
   assert.equal(paths.filter((path) => path.startsWith('/models/')).length, 26);
+  assert.equal(paths.filter((path) => path.startsWith('/rankings/')).length, 6);
   const titles = new Set();
   const internalLinks = new Set();
   const images = new Set();
@@ -56,7 +57,32 @@ try {
       assert.ok(meta(html, 'og:image')?.startsWith(origin), `Missing social image: ${path}`);
       const data = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
       assert.ok(data.length, `Missing JSON-LD: ${path}`);
-      for (const [, json] of data) JSON.parse(json);
+      const structured = data.flatMap(([, json]) => JSON.parse(json));
+      if (path.startsWith('/rankings/')) {
+        const table = tags(html, 'table').find((tag) => tag['data-ranking-kind']);
+        assert.ok(table, `Missing ranking table: ${path}`);
+        const rows = tags(html, 'tr').filter((tag) => tag['data-model-slug']);
+        const slugs = rows.map((tag) => tag['data-model-slug']);
+        assert.ok(rows.length >= 5, `Incomplete ranking: ${path}`);
+        assert.equal(slugs.length, new Set(slugs).size, `Duplicate model: ${path}`);
+        for (const slug of slugs) assert.ok(paths.includes(`/models/${slug}`), `Unknown model: ${slug}`);
+        const list = structured.find((item) => item['@type'] === 'CollectionPage')?.mainEntity;
+        assert.equal(list?.numberOfItems, rows.length, `List count: ${path}`);
+        assert.deepEqual(list.itemListElement.map((item) => new URL(item.url).pathname), slugs.map((slug) => `/models/${slug}`), `Visible/schema order: ${path}`);
+        const kind = table['data-ranking-kind'];
+        if (kind === 'shortlist') {
+          assert.equal(list.itemListOrder, 'https://schema.org/ItemListUnordered');
+          assert.ok(rows.every((row) => row['data-sort-value'] === undefined), `Invented score: ${path}`);
+          const names = list.itemListElement.map((item) => item.name);
+          assert.deepEqual(names, [...names].sort((a, b) => a.localeCompare(b, 'en')), `Alphabetical shortlist: ${path}`);
+        } else {
+          const values = rows.map((row) => Number(row['data-sort-value']));
+          assert.ok(values.every((value) => Number.isFinite(value) && value > 0));
+          assert.deepEqual(values, [...values].sort((a, b) => kind === 'calculated' ? a - b : b - a), `Metric ordering: ${path}`);
+          assert.equal(list.itemListOrder, `https://schema.org/ItemListOrder${kind === 'calculated' ? 'Ascending' : 'Descending'}`);
+          if (kind === 'calculated') assert.deepEqual(values, [8, 16, 16.4, 24, 65.6, 618], 'Baseline 16-bit arithmetic');
+        }
+      }
       for (const { href } of tags(html, 'a')) if (href?.startsWith('/') && !href.startsWith('//')) internalLinks.add(href.split('#')[0]);
       for (const { src } of tags(html, 'img')) if (src?.startsWith('/brands/')) images.add(src);
     }));
@@ -72,7 +98,7 @@ try {
     assert.equal(meta(html, 'robots'), 'noindex, follow');
     assert.equal(tags(html, 'link').find((tag) => tag.rel === 'canonical')?.href, `${origin}/compare`);
   }
-  for (const path of ['/compare/not-a-real-comparison', '/guides/not-a-real-note', '/models/not-a-real-model']) assert.equal((await get(path)).status, 404, path);
+  for (const path of ['/compare/not-a-real-comparison', '/guides/not-a-real-note', '/models/not-a-real-model', '/rankings/not-a-real-ranking']) assert.equal((await get(path)).status, 404, path);
   const og = await fetch(`${base}/opengraph-image`);
   assert.equal(og.status, 200);
   assert.match(og.headers.get('content-type'), /image\/png/);

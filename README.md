@@ -16,6 +16,7 @@ Open http://127.0.0.1:3000. `npm run build` creates the production build; `npm s
 - Six curated Trending picks on the homepage, with a separate `/models` directory containing 20 current candidates and six baselines. Trending is an editorial selection, not a live popularity ranking.
 - Search, dynamic family filters, current/baseline filtering, selection of up to three models, and shareable comparison URLs.
 - Interactive 4/8/16-bit weight-memory estimates and memory-budget exploration.
+- A Rankings hub with six source-linked lists: calculated weight storage, published context tiers, and compact / coding / multimodal / MoE shortlists. Performance and GPU-fit rankings remain pending real tests.
 - Eight original deployment field notes and four curated comparison pages and a methodology / commercial disclosure page.
 - Static model and guide pages, per-route metadata and canonicals, Open Graph / Twitter text metadata, JSON-LD, sitemap, robots, semantic HTML, and a custom 404.
 - An optional read-only WebMCP model-comparison tool on browsers that expose `document.modelContext`.
@@ -54,6 +55,7 @@ Configure analytics and actual affiliate URLs only after obtaining the relevant 
 - Catalog assembly, baseline records, Trending slugs, and review date: `lib/models.ts`
 - New research profiles: `lib/latest-models.ts`
 - Guide content and sources: `lib/guides.ts`, `lib/field-notes.ts`
+- Ranking definitions, inclusion rules, and ordering: `lib/rankings.ts`
 - Curated comparison pages: `lib/comparisons.ts`
 - Metadata / origin handling: `lib/seo.ts`
 - Visual system and breakpoints: `app/globals.css`

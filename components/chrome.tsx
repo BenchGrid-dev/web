@@ -17,6 +17,7 @@ export function Header() {
         <Logo />
         <nav aria-label="Main navigation">
           <Link href="/models">Models</Link>
+          <Link href="/rankings">Rankings</Link>
           <Link href="/compare">Compare</Link>
           <Link href="/guides">Guides</Link>
         </nav>
@@ -34,6 +35,7 @@ export function Footer() {
         </div>
         <div className="footer-links">
           <Link href="/models">Model directory</Link>
+          <Link href="/rankings">Rankings & shortlists</Link>
           <Link href="/compare">Compare models</Link>
           <Link href="/methodology">Methodology & disclosure</Link>
         </div>

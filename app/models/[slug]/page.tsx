@@ -5,6 +5,7 @@ import { models, getModel, formatGB, weightGB, reviewed } from "@/lib/models";
 import { pageMetadata, jsonLd, siteUrl } from "@/lib/seo";
 import { Breadcrumb, ArrowLink } from "@/components/chrome";
 import { ModelMark } from "@/components/model-directory";
+import { rankings } from "@/lib/rankings";
 import { comparisonNotes } from "@/lib/comparisons";
 import { MemoryCalculator } from "@/components/memory-calculator";
 export function generateStaticParams() {
@@ -187,6 +188,7 @@ export default async function ModelPage({
         </div>
       </section>
       {comparisonNotes.some((note) => note.models.includes(slug)) && <section className="comparison-collection"><h2>Compare {model.name}</h2><div className="comparison-note-grid">{comparisonNotes.filter((note) => note.models.includes(slug)).map((note) => <Link href={`/compare/${note.slug}`} key={note.slug}><h3>{note.title}</h3><p>{note.description}</p><span>Read comparison →</span></Link>)}</div></section>}
+      {rankings.some((entry) => entry.slugs.includes(slug)) && <section className="model-ranking-links"><h2>Find this model in</h2><div>{rankings.filter((entry) => entry.slugs.includes(slug)).map((entry) => <Link key={entry.slug} href={`/rankings/${entry.slug}`}>{entry.title}<ArrowRight size={14} /></Link>)}</div></section>}
       <section className="related-section">
         <span className="eyebrow">KEEP EXPLORING</span>
         <div className="related-grid">

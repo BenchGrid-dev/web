@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { Header, Footer } from "@/components/chrome";
 import { ModelTools } from "@/components/model-tools";
 import { siteUrl, isPublicSite, jsonLd } from "@/lib/seo";
@@ -29,6 +30,7 @@ export default function RootLayout({
         {children}
         <Footer />
         <ModelTools />
+        <Analytics />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
